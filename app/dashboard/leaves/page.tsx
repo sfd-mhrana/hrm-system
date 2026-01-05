@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, leaveService, initializeData, type LeaveRequest } from "@/lib/mock-data"
+import { authService, employeeService, leaveService, initializeData, type LeaveRequest } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -39,12 +39,12 @@ export default function LeavesPage() {
       setUserRole(user.role)
 
       if (user.role === "admin") {
-        const allLeaves = leaveService.getAll()
+        const allLeaves = await leaveService.getAll()
         setLeaves(allLeaves)
       } else {
-        const employee = employeeService.getByUserId(user.id)
+        const employee = await employeeService.getByUserId(user.id)
         if (employee) {
-          const employeeLeaves = leaveService.getByEmployee(employee.id)
+          const employeeLeaves = await leaveService.getByEmployee(employee.id)
           setLeaves(employeeLeaves)
         }
       }
@@ -61,7 +61,7 @@ export default function LeavesPage() {
 
   const handleApproveLeave = async (leaveId: string) => {
     try {
-      leaveService.update(leaveId, { status: "approved" })
+      await leaveService.update(leaveId, { status: "approved" })
       await fetchLeaves()
     } catch (error) {
       console.error("Error approving leave:", error)
@@ -70,7 +70,7 @@ export default function LeavesPage() {
 
   const handleRejectLeave = async (leaveId: string) => {
     try {
-      leaveService.update(leaveId, { status: "rejected" })
+      await leaveService.update(leaveId, { status: "rejected" })
       await fetchLeaves()
     } catch (error) {
       console.error("Error rejecting leave:", error)
@@ -190,10 +190,10 @@ function LeaveRequestDialog({ onLeaveRequested, open, onOpenChange }: LeaveReque
       const user = authService.getUser()
       if (!user) return
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (!employee) return
 
-      leaveService.add({
+      await leaveService.add({
         employee_id: employee.id,
         leave_type: formData.leaveType,
         start_date: formData.startDate,

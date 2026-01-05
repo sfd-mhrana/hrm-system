@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // hashed password
+  role      String   @default("employee") // "admin" | "employee"
+  full_name String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  employee Employee?
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  user_id    String?  @unique
+  first_name String
+  last_name  String
+  email      String   @unique
+  department String?
+  position   String?
+  hire_date  DateTime?
+  phone      String?
+  status     String   @default("active") // "active" | "inactive"
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user        User?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  attendance  Attendance[]
+  leaveRequests LeaveRequest[]
+  reviews     PerformanceReview[] @relation("EmployeeReviews")
+  reviewedBy  PerformanceReview[] @relation("ReviewerReviews")
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  employee_id String
+  date        DateTime @db.Date
+  status      String   // "present" | "absent" | "late" | "half-day"
+  check_in    DateTime?
+  check_out   DateTime?
+  notes       String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  employee Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+
+  @@index([employee_id])
+  @@index([date])
+}
+
+model LeaveRequest {
+  id          String   @id @default(uuid())
+  employee_id String
+  leave_type  String   // "sick" | "casual" | "vacation" | "personal"
+  start_date  DateTime @db.Date
+  end_date    DateTime @db.Date
+  reason      String   @db.Text
+  status      String   @default("pending") // "pending" | "approved" | "rejected"
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  employee Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+
+  @@index([employee_id])
+  @@index([status])
+}
+
+model PerformanceReview {
+  id          String   @id @default(uuid())
+  employee_id String
+  reviewer_id String
+  rating      Int      // 1-5 rating
+  comments    String   @db.Text
+  review_date DateTime @db.Date
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  employee Employee @relation("EmployeeReviews", fields: [employee_id], references: [id], onDelete: Cascade)
+  reviewer Employee @relation("ReviewerReviews", fields: [reviewer_id], references: [id], onDelete: Cascade)
+
+  @@index([employee_id])
+  @@index([reviewer_id])
+}

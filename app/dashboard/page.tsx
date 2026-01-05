@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, attendanceService, leaveService, initializeData } from "@/lib/mock-data"
+import { authService, employeeService, attendanceService, leaveService, initializeData } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function DashboardPage() {
@@ -23,11 +23,11 @@ export default function DashboardPage() {
 
       // Fetch stats based on role
       if (user.role === "admin") {
-        const employees = employeeService.getAll()
+        const employees = await employeeService.getAll()
         const today = new Date().toISOString().split("T")[0]
-        const todayAttendance = attendanceService.getByDate(today)
+        const todayAttendance = await attendanceService.getByDate(today)
         const presentCount = todayAttendance.filter((a) => a.status === "present").length
-        const pendingLeaves = leaveService.getPending()
+        const pendingLeaves = await leaveService.getPending()
 
         setStats({
           totalEmployees: employees.length,

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, leaveService, initializeData, type LeaveRequest } from "@/lib/mock-data"
+import { authService, employeeService, leaveService, initializeData, type LeaveRequest } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -35,9 +35,9 @@ export default function MyLeavesPage() {
         return
       }
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (employee) {
-        const employeeLeaves = leaveService.getByEmployee(employee.id)
+        const employeeLeaves = await leaveService.getByEmployee(employee.id)
         setLeaves(employeeLeaves)
       }
     } catch (error) {
@@ -139,10 +139,10 @@ function LeaveRequestDialog({ onLeaveRequested, open, onOpenChange }: LeaveReque
       const user = authService.getUser()
       if (!user) return
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (!employee) return
 
-      leaveService.add({
+      await leaveService.add({
         employee_id: employee.id,
         leave_type: formData.leaveType,
         start_date: formData.startDate,

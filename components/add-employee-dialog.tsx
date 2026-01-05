@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { employeeService } from "@/lib/mock-data"
+import { employeeService } from "@/lib/api-client"
 
 interface AddEmployeeDialogProps {
   onEmployeeAdded: () => void
@@ -40,7 +40,7 @@ export function AddEmployeeDialog({ onEmployeeAdded }: AddEmployeeDialogProps) {
     setError(null)
 
     try {
-      const existingEmployees = employeeService.getAll()
+      const existingEmployees = await employeeService.getAll()
       const existingEmployee = existingEmployees.find((emp) => emp.email === formData.email)
 
       if (existingEmployee) {
@@ -49,7 +49,7 @@ export function AddEmployeeDialog({ onEmployeeAdded }: AddEmployeeDialogProps) {
         return
       }
 
-      employeeService.add({
+      await employeeService.add({
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, initializeData, type Employee } from "@/lib/mock-data"
+import { authService, employeeService, initializeData, type Employee } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { AddEmployeeDialog } from "@/components/add-employee-dialog"
@@ -27,11 +27,11 @@ export default function EmployeesPage() {
 
       // If admin, fetch all employees; if employee, fetch own profile
       if (user.role === "admin") {
-        const allEmployees = employeeService.getAll()
+        const allEmployees = await employeeService.getAll()
         setEmployees(allEmployees)
       } else {
         // Fetch own employee record
-        const ownEmployee = employeeService.getByUserId(user.id)
+        const ownEmployee = await employeeService.getByUserId(user.id)
         if (ownEmployee) {
           setEmployees([ownEmployee])
         }

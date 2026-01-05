@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { authService } from "@/lib/mock-data"
+import { authService } from "@/lib/api-client"
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)

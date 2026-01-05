@@ -1,5 +1,5 @@
 "use client"
-import { authService } from "@/lib/mock-data"
+import { authService } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 

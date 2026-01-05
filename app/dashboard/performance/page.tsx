@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, reviewService, initializeData, type PerformanceReview } from "@/lib/mock-data"
+import { authService, employeeService, reviewService, initializeData, type PerformanceReview } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -38,12 +38,12 @@ export default function PerformancePage() {
       setUserRole(user.role)
 
       if (user.role === "admin") {
-        const allReviews = reviewService.getAll()
+        const allReviews = await reviewService.getAll()
         setReviews(allReviews)
       } else {
-        const employee = employeeService.getByUserId(user.id)
+        const employee = await employeeService.getByUserId(user.id)
         if (employee) {
-          const employeeReviews = reviewService.getByEmployee(employee.id)
+          const employeeReviews = await reviewService.getByEmployee(employee.id)
           setReviews(employeeReviews)
         }
       }
@@ -141,10 +141,13 @@ function AddReviewDialog({ onReviewAdded, open, onOpenChange }: AddReviewDialogP
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      const allEmployees = employeeService.getAll()
-      setEmployees(allEmployees)
+    const fetchEmployees = async () => {
+      if (open) {
+        const allEmployees = await employeeService.getAll()
+        setEmployees(allEmployees)
+      }
     }
+    fetchEmployees()
   }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,7 +158,7 @@ function AddReviewDialog({ onReviewAdded, open, onOpenChange }: AddReviewDialogP
       const user = authService.getUser()
       if (!user) return
 
-      reviewService.add({
+      await reviewService.add({
         employee_id: formData.employeeId,
         reviewer_id: user.id,
         rating: formData.rating,

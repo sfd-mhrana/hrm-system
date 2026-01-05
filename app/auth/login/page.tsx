@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { authService } from "@/lib/mock-data"
+import { authService } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"

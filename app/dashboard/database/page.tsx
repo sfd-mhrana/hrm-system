@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { employeeService, attendanceService, leaveService, reviewService, authService, initializeData } from "@/lib/mock-data"
+import { employeeService, attendanceService, leaveService, reviewService, authService, initializeData } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -16,18 +16,29 @@ export default function DatabasePage() {
   const [reviews, setReviews] = useState<any[]>([])
 
   useEffect(() => {
-    initializeData()
-    const user = authService.getUser()
+    const fetchData = async () => {
+      initializeData()
+      const user = authService.getUser()
 
-    if (!user || user.role !== "admin") {
-      router.push("/dashboard")
-      return
+      if (!user || user.role !== "admin") {
+        router.push("/dashboard")
+        return
+      }
+
+      const [employeesData, attendanceData, leavesData, reviewsData] = await Promise.all([
+        employeeService.getAll(),
+        attendanceService.getAll(),
+        leaveService.getAll(),
+        reviewService.getAll(),
+      ])
+
+      setEmployees(employeesData)
+      setAttendance(attendanceData)
+      setLeaves(leavesData)
+      setReviews(reviewsData)
     }
 
-    setEmployees(employeeService.getAll())
-    setAttendance(attendanceService.getAll())
-    setLeaves(leaveService.getAll())
-    setReviews(reviewService.getAll())
+    fetchData()
   }, [])
 
   return (

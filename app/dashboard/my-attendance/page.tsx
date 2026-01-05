@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, attendanceService, initializeData, type Attendance } from "@/lib/mock-data"
+import { authService, employeeService, attendanceService, initializeData, type Attendance } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -22,9 +22,9 @@ export default function MyAttendancePage() {
         return
       }
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (employee) {
-        const attendanceRecords = attendanceService.getByEmployee(employee.id)
+        const attendanceRecords = await attendanceService.getByEmployee(employee.id)
         setRecords(attendanceRecords)
       }
     } catch (error) {
@@ -43,23 +43,23 @@ export default function MyAttendancePage() {
       const user = authService.getUser()
       if (!user) return
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (!employee) return
 
       const today = new Date().toISOString().split("T")[0]
       const currentTime = new Date().toTimeString().split(" ")[0]
 
       // Check if attendance already exists for today
-      const existingRecords = attendanceService.getByEmployee(employee.id)
+      const existingRecords = await attendanceService.getByEmployee(employee.id)
       const todayRecord = existingRecords.find((r) => r.date === today)
 
       if (todayRecord) {
-        attendanceService.update(todayRecord.id, {
+        await attendanceService.update(todayRecord.id, {
           status,
           check_in: status === "present" ? currentTime : undefined,
         })
       } else {
-        attendanceService.add({
+        await attendanceService.add({
           employee_id: employee.id,
           date: today,
           status,

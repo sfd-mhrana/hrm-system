@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, attendanceService, initializeData, type Attendance } from "@/lib/mock-data"
+import { authService, employeeService, attendanceService, initializeData, type Attendance } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -29,13 +29,13 @@ export default function AttendancePage() {
 
       if (user.role === "admin") {
         // Admin views all attendance for selected date
-        const records = attendanceService.getByDate(selectedDate)
+        const records = await attendanceService.getByDate(selectedDate)
         setAttendanceRecords(records)
       } else {
         // Employee views only their own
-        const employee = employeeService.getByUserId(user.id)
+        const employee = await employeeService.getByUserId(user.id)
         if (employee) {
-          const records = attendanceService.getByEmployee(employee.id)
+          const records = await attendanceService.getByEmployee(employee.id)
           setAttendanceRecords(records)
         }
       }
@@ -55,25 +55,25 @@ export default function AttendancePage() {
       const user = authService.getUser()
       if (!user) return
 
-      const employee = employeeService.getByUserId(user.id)
+      const employee = await employeeService.getByUserId(user.id)
       if (!employee) return
 
       const today = new Date().toISOString().split("T")[0]
       const currentTime = new Date().toTimeString().split(" ")[0]
 
       // Check if attendance already exists for today
-      const existingRecords = attendanceService.getByEmployee(employee.id)
+      const existingRecords = await attendanceService.getByEmployee(employee.id)
       const todayRecord = existingRecords.find((r) => r.date === today)
 
       if (todayRecord) {
         // Update existing record
-        attendanceService.update(todayRecord.id, {
+        await attendanceService.update(todayRecord.id, {
           status,
           check_in: status === "present" ? currentTime : undefined,
         })
       } else {
         // Create new record
-        attendanceService.add({
+        await attendanceService.add({
           employee_id: employee.id,
           date: today,
           status,

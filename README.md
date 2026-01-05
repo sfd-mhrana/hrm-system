@@ -1,10 +1,10 @@
 # HRM System - Human Resource Management Platform
 
-A complete, production-ready Human Resource Management system built with Next.js 16, React 19, and Tailwind CSS.
+A complete, production-ready Human Resource Management system built with Next.js 16, React 19, MySQL, and Tailwind CSS.
 
 ## 🎯 Project Overview
 
-This HRM system provides comprehensive HR management capabilities including employee management, attendance tracking, leave management, performance reviews, and analytics - all with role-based access control and local data storage.
+This HRM system provides comprehensive HR management capabilities including employee management, attendance tracking, leave management, performance reviews, and analytics - all with role-based access control and MySQL database backend.
 
 ## ✨ Key Features
 
@@ -52,6 +52,7 @@ This HRM system provides comprehensive HR management capabilities including empl
 
 ### Prerequisites
 - Node.js 18+
+- MySQL 8.0+ (installed and running)
 - npm/yarn/pnpm
 
 ### Installation
@@ -61,15 +62,35 @@ This HRM system provides comprehensive HR management capabilities including empl
    npm install
    ```
 
-2. **Start development server:**
+2. **Set up database:**
+   ```bash
+   # Create MySQL database
+   mysql -u root -p -e "CREATE DATABASE hrm_system;"
+   
+   # Configure environment (copy .env.example to .env and update credentials)
+   cp .env.example .env
+   
+   # Generate Prisma Client
+   npm run db:generate
+   
+   # Push schema to database
+   npm run db:push
+   
+   # Seed initial data
+   npm run db:seed
+   ```
+
+3. **Start development server:**
    ```bash
    npm run dev
    ```
 
-3. **Open in browser:**
+4. **Open in browser:**
    ```
    http://localhost:3000/auth/login
    ```
+
+For detailed setup instructions, see [SETUP.md](./SETUP.md)
 
 ## 📝 Admin Credentials
 
@@ -111,31 +132,36 @@ Password: admin123
 │   ├── add-employee-dialog.tsx # Employee form dialog
 │   └── ui/                     # Shadcn UI components
 ├── lib/
-│   ├── mock-data.ts            # Local data service
+│   ├── api-client.ts            # API client service
+│   ├── prisma.ts               # Prisma client
 │   └── utils.ts                # Utility functions
+├── prisma/
+│   ├── schema.prisma           # Database schema
+│   └── seed.ts                # Database seed script
 └── ADMIN_CREDENTIALS.txt       # Quick credentials reference
 ```
 
 ## 🛠 Tech Stack
 
 - **Frontend:** Next.js 16 (App Router), React 19, TypeScript
+- **Backend:** Next.js API Routes, Prisma ORM
+- **Database:** MySQL 8.0+
 - **Styling:** Tailwind CSS 4, Shadcn/ui components
-- **Data Storage:** Local Storage (Browser)
-- **Authentication:** Local state management
+- **Authentication:** bcryptjs password hashing, session management
 - **Charts:** Recharts for analytics visualization
 - **UI Components:** Radix UI primitives
 
 ## 📊 Data Management
 
-### Local Storage
-All data is stored locally in your browser using localStorage:
-- **Users** - User profiles with roles (admin/employee)
+### MySQL Database
+All data is stored in a MySQL database with the following tables:
+- **Users** - User profiles with roles (admin/employee), password hashing
 - **Employees** - Employee records and information
 - **Attendance** - Daily attendance logs with timestamps
-- **Leave Requests** - Leave applications and approvals
-- **Performance Reviews** - Performance evaluations and ratings
+- **LeaveRequests** - Leave applications and approvals
+- **PerformanceReviews** - Performance evaluations and ratings
 
-Data persists across browser sessions but is specific to each browser.
+Data persists permanently in the database and is accessible across all devices and browsers.
 
 ## 🔐 Security Features
 
@@ -182,20 +208,30 @@ Data persists across browser sessions but is specific to each browser.
 
 ### Deploy to Vercel (Recommended)
 
-1. Push code to GitHub repository
-2. Import project to Vercel
-3. Deploy automatically
-4. Access via provided URL
+1. Set up MySQL database (e.g., PlanetScale, Railway, or AWS RDS)
+2. Configure environment variables in Vercel:
+   - `DATABASE_URL` - MySQL connection string
+   - Or individual DB variables (DB_HOST, DB_PORT, etc.)
+3. Push code to GitHub repository
+4. Import project to Vercel
+5. Run database migrations: `npm run db:migrate`
+6. Seed initial data: `npm run db:seed`
+7. Deploy automatically
 
-Note: All data is stored locally in the browser, so no backend/database configuration is needed.
+**Note:** You'll need a MySQL database instance for production deployment.
 
 ## 📝 Scripts
 
 ```bash
-npm run dev      # Start development server (port 3000)
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint checks
+npm run dev          # Start development server (port 3000)
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint checks
+npm run db:generate  # Generate Prisma Client
+npm run db:push      # Push schema to database
+npm run db:migrate   # Run database migrations
+npm run db:seed      # Seed database with initial data
+npm run db:setup-env # Setup environment variables
 ```
 
 ## 🎓 Perfect for Final Year Projects
@@ -213,12 +249,16 @@ This system demonstrates:
 
 ## ✅ System Status
 
-**Authentication:** ✓ Active with admin account  
+**Authentication:** ✓ Active with bcryptjs password hashing  
+**Database:** ✓ MySQL with Prisma ORM  
+**API:** ✓ REST API with 13 endpoints  
 **UI:** ✓ Complete and responsive  
-**Sample Data:** ✓ 4 employees (1 admin + 3 test)  
-**Data Storage:** ✓ Local storage configured  
+**Sample Data:** ✓ 4 employees (1 admin + 3 test) seeded  
+**Data Storage:** ✓ MySQL database configured  
 
 **Status: 🟢 PRODUCTION READY**
+
+See [MIGRATION_REPORT.md](./MIGRATION_REPORT.md) for detailed migration information.
 
 ## 📄 License
 

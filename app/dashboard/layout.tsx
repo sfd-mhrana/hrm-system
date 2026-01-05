@@ -2,7 +2,7 @@
 
 import { DashboardHeader } from "@/components/dashboard-header"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { authService, initializeData } from "@/lib/mock-data"
+import { authService, initializeData } from "@/lib/api-client"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useEffect, useState } from "react"

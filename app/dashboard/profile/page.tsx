@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, initializeData, type Employee } from "@/lib/mock-data"
+import { authService, employeeService, initializeData, type Employee } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 
@@ -21,7 +21,7 @@ export default function ProfilePage() {
           return
         }
 
-        const employee = employeeService.getByUserId(user.id)
+        const employee = await employeeService.getByUserId(user.id)
         if (employee) {
           setProfile(employee)
         }

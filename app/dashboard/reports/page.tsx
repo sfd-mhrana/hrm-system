@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { authService, employeeService, attendanceService, leaveService, reviewService, initializeData } from "@/lib/mock-data"
+import { authService, employeeService, attendanceService, leaveService, reviewService, initializeData } from "@/lib/api-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 
@@ -45,11 +45,11 @@ export default function ReportsPage() {
         }
 
         // Fetch all data
-        const employees = employeeService.getAll()
+        const employees = await employeeService.getAll()
         const activeEmployees = employees.filter((e) => e.status === "active")
-        const attendance = attendanceService.getAll()
-        const leaves = leaveService.getAll()
-        const reviews = reviewService.getAll()
+        const attendance = await attendanceService.getAll()
+        const leaves = await leaveService.getAll()
+        const reviews = await reviewService.getAll()
 
         // Calculate statistics
         const presentCount = attendance.filter((a) => a.status === "present").length

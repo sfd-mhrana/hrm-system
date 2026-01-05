@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { authService, employeeService } from "@/lib/mock-data"
+import { authService, employeeService } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,7 +42,7 @@ export default function SignUpPage() {
 
       if (user) {
         // Create employee record for the new user
-        employeeService.add({
+        await employeeService.add({
           user_id: user.id,
           first_name: formData.firstName,
           last_name: formData.lastName,
