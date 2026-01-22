@@ -92,6 +92,8 @@ export default function PerformancePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {isAdmin && <TableHead>Employee</TableHead>}
+                    <TableHead>Reviewer</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Rating</TableHead>
                     <TableHead>Comments</TableHead>
@@ -100,6 +102,21 @@ export default function PerformancePage() {
                 <TableBody>
                   {reviews.map((review) => (
                     <TableRow key={review.id}>
+                      {isAdmin && (
+                        <TableCell>
+                          <div className="font-medium">
+                            {review.employee?.first_name} {review.employee?.last_name}
+                          </div>
+                          <div className="text-sm text-slate-500 dark:text-slate-400">
+                            {review.employee?.email}
+                          </div>
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <div className="text-sm">
+                          {review.reviewer?.first_name} {review.reviewer?.last_name}
+                        </div>
+                      </TableCell>
                       <TableCell>{review.review_date}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
@@ -108,7 +125,7 @@ export default function PerformancePage() {
                               ⭐
                             </span>
                           ))}
-                          <span className="ml-2 text-sm text-slate-600">({review.rating}/5)</span>
+                          <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">({review.rating}/5)</span>
                         </div>
                       </TableCell>
                       <TableCell className="max-w-xs truncate">{review.comments || "-"}</TableCell>
@@ -139,10 +156,12 @@ function AddReviewDialog({ onReviewAdded, open, onOpenChange }: AddReviewDialogP
   })
   const [employees, setEmployees] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchEmployees = async () => {
       if (open) {
+        setError(null) // Clear error when dialog opens
         const allEmployees = await employeeService.getAll()
         setEmployees(allEmployees)
       }
@@ -153,29 +172,37 @@ function AddReviewDialog({ onReviewAdded, open, onOpenChange }: AddReviewDialogP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
       const user = authService.getUser()
-      if (!user) return
+      if (!user) {
+        setError("User not authenticated")
+        return
+      }
 
+      // Don't pass reviewer_id - backend will auto-assign from current admin's employee record
       await reviewService.add({
         employee_id: formData.employeeId,
-        reviewer_id: user.id,
         rating: formData.rating,
         comments: formData.comments,
         review_date: formData.reviewDate,
       })
 
+      // Reset form
       setFormData({
         employeeId: "",
         rating: 5,
         comments: "",
         reviewDate: new Date().toISOString().split("T")[0],
       })
+
+      // Close dialog and refresh list
       onOpenChange(false)
       onReviewAdded()
     } catch (error) {
       console.error("Error adding review:", error)
+      setError(error instanceof Error ? error.message : "Failed to add review")
     } finally {
       setIsLoading(false)
     }
@@ -237,6 +264,11 @@ function AddReviewDialog({ onReviewAdded, open, onOpenChange }: AddReviewDialogP
               placeholder="Performance comments..."
             />
           </div>
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

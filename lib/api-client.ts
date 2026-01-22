@@ -51,6 +51,18 @@ export interface PerformanceReview {
     comments: string
     review_date: string
     created_at: string
+    employee?: {
+        id: string
+        first_name: string
+        last_name: string
+        email: string
+    }
+    reviewer?: {
+        id: string
+        first_name: string
+        last_name: string
+        email: string
+    }
 }
 
 // Local storage keys
@@ -358,7 +370,7 @@ export const reviewService = {
         }
     },
 
-    add: async (review: Omit<PerformanceReview, "id" | "created_at">): Promise<PerformanceReview> => {
+    add: async (review: Omit<PerformanceReview, "id" | "created_at" | "reviewer_id"> & { reviewer_id?: string }): Promise<PerformanceReview> => {
         const response = await apiRequest<{ review: PerformanceReview }>("/reviews", {
             method: "POST",
             body: JSON.stringify(review),

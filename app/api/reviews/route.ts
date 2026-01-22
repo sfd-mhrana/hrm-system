@@ -78,14 +78,45 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
     const { employee_id, reviewer_id, rating, comments, review_date } = data
 
-    // Get reviewer employee record (required for reviews)
-    const reviewerEmployee = await prisma.employee.findUnique({
-      where: { user_id: userId },
+    // Validate employee exists
+    const employee = await prisma.employee.findUnique({
+      where: { id: employee_id },
     })
 
-    if (!reviewerEmployee) {
+    if (!employee) {
       return NextResponse.json(
-        { error: 'Reviewer employee record not found. Please ensure you have an employee profile.' },
+        { error: 'Employee not found' },
+        { status: 404 }
+      )
+    }
+
+    // Determine the reviewer ID to use
+    let finalReviewerId = reviewer_id
+
+    // If no reviewer_id provided, use the current admin's employee record
+    if (!finalReviewerId) {
+      const reviewerEmployee = await prisma.employee.findUnique({
+        where: { user_id: userId },
+      })
+
+      if (!reviewerEmployee) {
+        return NextResponse.json(
+          { error: 'Reviewer employee record not found. Please ensure you have an employee profile.' },
+          { status: 404 }
+        )
+      }
+
+      finalReviewerId = reviewerEmployee.id
+    }
+
+    // Validate reviewer exists
+    const reviewer = await prisma.employee.findUnique({
+      where: { id: finalReviewerId },
+    })
+
+    if (!reviewer) {
+      return NextResponse.json(
+        { error: 'Reviewer not found' },
         { status: 404 }
       )
     }
@@ -93,7 +124,7 @@ export async function POST(request: NextRequest) {
     const review = await prisma.performanceReview.create({
       data: {
         employee_id,
-        reviewer_id: reviewer_id || reviewerEmployee.id,
+        reviewer_id: finalReviewerId,
         rating,
         comments,
         review_date: new Date(review_date),
@@ -103,6 +134,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ review }, { status: 201 })
   } catch (error) {
     console.error('Create review error:', error)
+
+    // Provide more specific error messages for common issues
+    if (error instanceof Error) {
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { error: 'Invalid employee or reviewer ID provided' },
+          { status: 400 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
