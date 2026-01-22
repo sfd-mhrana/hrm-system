@@ -52,15 +52,24 @@ This HRM system provides comprehensive HR management capabilities including empl
    http://localhost:3000/auth/login
    ```
 
-## 📝 Default Credentials
+## 📝 Pre-configured Login Accounts
 
-**Admin Login:**
+After running `npm run db:seed`, you get **4 user accounts**:
+
+**Admin:**
 ```
 Email:    admin@hrmsystem.com
 Password: admin123
 ```
 
-⚠️ **Change password after first login!**
+**Employees:**
+```
+john.doe@hrmsystem.com    / john123
+jane.smith@hrmsystem.com  / jane123
+mike.johnson@hrmsystem.com / mike123
+```
+
+⚠️ **Change all passwords after first login!**
 
 For complete credentials and database details, see **[CREDENTIALS.md](./CREDENTIALS.md)**
 

@@ -114,7 +114,9 @@ const apiRequest = async <T>(
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: "Unknown error" }))
-        throw new Error(error.error || `HTTP error! status: ${response.status}`)
+        const errorMessage = error.error || `HTTP error! status: ${response.status}`
+        console.error(`API Error [${endpoint}]:`, errorMessage, { status: response.status, error })
+        throw new Error(errorMessage)
     }
 
     return response.json()

@@ -3,11 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const review = await prisma.performanceReview.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         employee: {
           select: {
@@ -38,8 +40,9 @@ export async function GET(
     return NextResponse.json({ review }, { status: 200 })
   } catch (error) {
     console.error('Get review error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -47,9 +50,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -61,7 +65,7 @@ export async function PUT(
     }
 
     const existingReview = await prisma.performanceReview.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingReview) {
@@ -75,7 +79,7 @@ export async function PUT(
     const { rating, comments, review_date } = data
 
     const review = await prisma.performanceReview.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(rating && { rating }),
         ...(comments !== undefined && { comments }),
@@ -86,8 +90,9 @@ export async function PUT(
     return NextResponse.json({ review }, { status: 200 })
   } catch (error) {
     console.error('Update review error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -95,9 +100,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -109,7 +115,7 @@ export async function DELETE(
     }
 
     const review = await prisma.performanceReview.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!review) {
@@ -120,14 +126,15 @@ export async function DELETE(
     }
 
     await prisma.performanceReview.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Review deleted successfully' }, { status: 200 })
   } catch (error) {
     console.error('Delete review error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

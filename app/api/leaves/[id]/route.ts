@@ -3,11 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const leave = await prisma.leaveRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         employee: {
           select: {
@@ -30,8 +32,9 @@ export async function GET(
     return NextResponse.json({ leave }, { status: 200 })
   } catch (error) {
     console.error('Get leave error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -39,9 +42,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -53,7 +57,7 @@ export async function PUT(
     }
 
     const existingLeave = await prisma.leaveRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingLeave) {
@@ -94,7 +98,7 @@ export async function PUT(
     }
 
     const leave = await prisma.leaveRequest.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(leave_type && { leave_type }),
         ...(start_date && { start_date: new Date(start_date) }),
@@ -107,8 +111,9 @@ export async function PUT(
     return NextResponse.json({ leave }, { status: 200 })
   } catch (error) {
     console.error('Update leave error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -116,9 +121,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -130,7 +136,7 @@ export async function DELETE(
     }
 
     const existingLeave = await prisma.leaveRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingLeave) {
@@ -160,14 +166,15 @@ export async function DELETE(
     }
 
     await prisma.leaveRequest.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Leave request deleted successfully' }, { status: 200 })
   } catch (error) {
     console.error('Delete leave error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

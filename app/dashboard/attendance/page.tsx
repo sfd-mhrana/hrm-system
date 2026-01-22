@@ -59,7 +59,7 @@ export default function AttendancePage() {
       if (!employee) return
 
       const today = new Date().toISOString().split("T")[0]
-      const currentTime = new Date().toTimeString().split(" ")[0]
+      const currentDateTime = new Date().toISOString()
 
       // Check if attendance already exists for today
       const existingRecords = await attendanceService.getByEmployee(employee.id)
@@ -69,7 +69,7 @@ export default function AttendancePage() {
         // Update existing record
         await attendanceService.update(todayRecord.id, {
           status,
-          check_in: status === "present" ? currentTime : undefined,
+          check_in: status === "present" ? currentDateTime : undefined,
         })
       } else {
         // Create new record
@@ -77,7 +77,7 @@ export default function AttendancePage() {
           employee_id: employee.id,
           date: today,
           status,
-          check_in: status === "present" ? currentTime : undefined,
+          check_in: status === "present" ? currentDateTime : undefined,
         })
       }
 

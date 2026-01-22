@@ -76,6 +76,61 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
     const { employee_id, date, status, check_in, check_out, notes } = data
 
+    // Validate required fields
+    if (!employee_id) {
+      return NextResponse.json(
+        { error: 'Employee ID is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!date) {
+      return NextResponse.json(
+        { error: 'Date is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!status) {
+      return NextResponse.json(
+        { error: 'Status is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate date
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid date format' },
+        { status: 400 }
+      )
+    }
+
+    // Validate check_in and check_out if provided (ignore null, undefined, and empty strings)
+    let checkInObj = null
+    let checkOutObj = null
+
+    if (check_in && typeof check_in === 'string' && check_in.trim() !== '') {
+      checkInObj = new Date(check_in)
+      if (isNaN(checkInObj.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid check_in time format' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (check_out && typeof check_out === 'string' && check_out.trim() !== '') {
+      checkOutObj = new Date(check_out)
+      if (isNaN(checkOutObj.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid check_out time format' },
+          { status: 400 }
+        )
+      }
+    }
+
     // If employee, only allow creating their own attendance
     if (userRole === 'employee') {
       const employee = await prisma.employee.findUnique({
@@ -92,10 +147,10 @@ export async function POST(request: NextRequest) {
     const attendance = await prisma.attendance.create({
       data: {
         employee_id,
-        date: new Date(date),
+        date: dateObj,
         status,
-        check_in: check_in ? new Date(check_in) : null,
-        check_out: check_out ? new Date(check_out) : null,
+        check_in: checkInObj,
+        check_out: checkOutObj,
         notes: notes || null,
       },
     })
@@ -103,8 +158,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ attendance }, { status: 201 })
   } catch (error) {
     console.error('Create attendance error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

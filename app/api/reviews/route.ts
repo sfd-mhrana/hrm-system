@@ -78,6 +78,46 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
     const { employee_id, reviewer_id, rating, comments, review_date } = data
 
+    // Validate required fields
+    if (!employee_id) {
+      return NextResponse.json(
+        { error: 'Employee ID is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!rating) {
+      return NextResponse.json(
+        { error: 'Rating is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!review_date) {
+      return NextResponse.json(
+        { error: 'Review date is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate rating range
+    const ratingNum = Number(rating)
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      return NextResponse.json(
+        { error: 'Rating must be between 1 and 5' },
+        { status: 400 }
+      )
+    }
+
+    // Validate review date
+    const reviewDateObj = new Date(review_date)
+    if (isNaN(reviewDateObj.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid review date format' },
+        { status: 400 }
+      )
+    }
+
     // Validate employee exists
     const employee = await prisma.employee.findUnique({
       where: { id: employee_id },
@@ -125,15 +165,16 @@ export async function POST(request: NextRequest) {
       data: {
         employee_id,
         reviewer_id: finalReviewerId,
-        rating,
+        rating: ratingNum,
         comments,
-        review_date: new Date(review_date),
+        review_date: reviewDateObj,
       },
     })
 
     return NextResponse.json({ review }, { status: 201 })
   } catch (error) {
     console.error('Create review error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
 
     // Provide more specific error messages for common issues
     if (error instanceof Error) {
@@ -146,7 +187,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

@@ -3,11 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const employee = await prisma.employee.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!employee) {
@@ -20,8 +22,9 @@ export async function GET(
     return NextResponse.json({ employee }, { status: 200 })
   } catch (error) {
     console.error('Get employee error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -29,9 +32,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -47,7 +51,7 @@ export async function PUT(
 
     // Check if employee exists
     const existingEmployee = await prisma.employee.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingEmployee) {
@@ -79,7 +83,7 @@ export async function PUT(
     }
 
     const employee = await prisma.employee.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(first_name && { first_name }),
         ...(last_name && { last_name }),
@@ -95,8 +99,9 @@ export async function PUT(
     return NextResponse.json({ employee }, { status: 200 })
   } catch (error) {
     console.error('Update employee error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -104,9 +109,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = request.headers.get('x-user-id')
     const userRole = request.headers.get('x-user-role')
 
@@ -118,7 +124,7 @@ export async function DELETE(
     }
 
     const employee = await prisma.employee.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!employee) {
@@ -129,14 +135,15 @@ export async function DELETE(
     }
 
     await prisma.employee.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Employee deleted successfully' }, { status: 200 })
   } catch (error) {
     console.error('Delete employee error:', error)
+    console.error('Error details:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
